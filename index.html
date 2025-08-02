@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DoeConect+ - Conectando Doações</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Abhaya+Libre:wght@800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>DoeConect+</h1>
+            </div>
+            <div class="header-search">
+                <input type="text" id="headerSearchInput" placeholder="Buscar roupas...">
+            </div>
+            <nav class="nav">
+                <a href="#" onclick="showHome()">Início</a>
+                <a href="#" onclick="showLogin()">Entrar</a>
+                <a href="#" onclick="showRegister()">Cadastrar</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('loginModal')">&times;</span>
+            <h2>Entrar</h2>
+            <form id="loginForm">
+                <input type="email" id="loginEmail" placeholder="E-mail" required>
+                <input type="password" id="loginPassword" placeholder="Senha" required>
+                <button type="submit">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('registerModal')">&times;</span>
+            <h2>Cadastrar</h2>
+            <form id="registerForm">
+                <input type="text" id="registerName" placeholder="Nome completo" required>
+                <input type="email" id="registerEmail" placeholder="E-mail" required>
+                <input type="password" id="registerPassword" placeholder="Senha" required>
+                <select id="userType" required>
+                    <option value="">Selecione o tipo de usuário</option>
+                    <option value="doador">Doador</option>
+                    <option value="donatario">Donatário</option>
+                </select>
+                <div id="incomeField" style="display: none;">
+                    <label for="incomeProof" style="color: white; margin-bottom: 0.5rem; display: block;">Anexar comprovantes de renda:</label>
+                    <input type="file" id="incomeProof" accept=".pdf,.jpg,.jpeg,.png" multiple>
+                </div>
+                <button type="submit">Cadastrar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Home Page -->
+        <div id="homePage" class="page active">
+            <div class="container">
+                <!-- Recent Products Section -->
+                <div class="recent-section">
+                    <h2 class="section-title">Recém-publicados</h2>
+                    <div id="recentProducts" class="recent-grid"></div>
+                </div>
+                
+                <!-- Categories Section -->
+                <div class="categories-section">
+                    <h2 class="section-title">Para você</h2>
+                    <div class="categories-nav">
+                        <button class="category-btn active" onclick="filterByCategory('')">Todos os itens</button>
+                        <button class="category-btn" onclick="filterByCategory('camiseta')">Camisetas</button>
+                        <button class="category-btn" onclick="filterByCategory('calca')">Calças</button>
+                        <button class="category-btn" onclick="filterByCategory('moletom')">Moletoms</button>
+                        <button class="category-btn" onclick="filterByCategory('tenis')">Tênis</button>
+                        <button class="category-btn" onclick="filterByCategory('shorts')">Shorts</button>
+                    </div>
+                </div>
+                
+                <div class="search-filters">
+                    <select id="typeFilter">
+                        <option value="">Todos os tipos</option>
+                        <option value="camiseta">Camiseta</option>
+                        <option value="calca">Calça</option>
+                        <option value="moletom">Moletom</option>
+                        <option value="tenis">Tênis</option>
+                        <option value="shorts">Shorts</option>
+                    </select>
+                    <select id="sizeFilter">
+                        <option value="">Todos os tamanhos</option>
+                        <option value="PP">PP</option>
+                        <option value="P">P</option>
+                        <option value="M">M</option>
+                        <option value="G">G</option>
+                        <option value="GG">GG</option>
+                    </select>
+                    <select id="conditionFilter">
+                        <option value="">Todas as condições</option>
+                        <option value="novo">Novo</option>
+                        <option value="seminovo">Seminovo</option>
+                        <option value="usado">Usado</option>
+                    </select>
+                </div>
+                <div id="productsGrid" class="products-grid"></div>
+            </div>
+        </div>
+
+        <!-- Donor Dashboard -->
+        <div id="donorPage" class="page">
+            <div class="container">
+                <div class="dashboard-header">
+                    <h2>Painel do Doador</h2>
+                    <button onclick="showAddProduct()" class="btn-primary">Adicionar Produto</button>
+                </div>
+                <div id="donorProducts" class="products-grid"></div>
+            </div>
+        </div>
+
+        <!-- Recipient Dashboard -->
+        <div id="recipientPage" class="page">
+            <div class="container">
+                <h2>Painel do Donatário</h2>
+                <div id="recipientInterests" class="products-grid"></div>
+            </div>
+        </div>
+
+        <!-- Chat Page -->
+        <div id="chatPage" class="page">
+            <div class="container">
+                <div class="chat-container">
+                    <div class="chat-sidebar">
+                        <h3>Conversas</h3>
+                        <div id="chatList"></div>
+                    </div>
+                    <div class="chat-main">
+                        <div id="chatMessages"></div>
+                        <div class="chat-input">
+                            <input type="text" id="messageInput" placeholder="Digite sua mensagem...">
+                            <button onclick="sendMessage()">Enviar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Product Modal -->
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addProductModal')">&times;</span>
+            <h2>Adicionar Produto</h2>
+            <form id="addProductForm">
+                <input type="text" id="productName" placeholder="Nome do item" required>
+                <textarea id="productDescription" placeholder="Descrição"></textarea>
+                <select id="productType" required>
+                    <option value="">Tipo de roupa</option>
+                    <option value="camiseta">Camiseta</option>
+                    <option value="calca">Calça</option>
+                    <option value="moletom">Moletom</option>
+                    <option value="tenis">Tênis</option>
+                    <option value="shorts">Shorts</option>
+                </select>
+                <select id="productSize" required>
+                    <option value="">Tamanho</option>
+                    <option value="PP">PP</option>
+                    <option value="P">P</option>
+                    <option value="M">M</option>
+                    <option value="G">G</option>
+                    <option value="GG">GG</option>
+                </select>
+                <select id="productCondition" required>
+                    <option value="">Estado de conservação</option>
+                    <option value="novo">Novo</option>
+                    <option value="seminovo">Seminovo</option>
+                    <option value="usado">Usado</option>
+                </select>
+                <input type="file" id="productImage" accept="image/*">
+                <input type="tel" id="productWhatsapp" placeholder="WhatsApp (opcional)">
+                <label>
+                    <input type="checkbox" id="enableChat"> Permitir chat interno
+                </label>
+                <button type="submit">Adicionar Produto</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
