@@ -3,6 +3,7 @@ let currentUser = null;
 let products = [];
 let chats = [];
 let currentChat = null;
+let previousPage = 'homePage';
 
 // Dados de exemplo
 const sampleProducts = [
@@ -14,7 +15,7 @@ const sampleProducts = [
         size: "M",
         condition: "seminovo",
         donor: "Maria Silva",
-        image: "images/camiseta-hellstar.webp",
+        image: "images/camisetas/camiseta-hellstar.webp",
         status: "available",
         whatsapp: "11999999999",
         chatEnabled: true
@@ -27,7 +28,7 @@ const sampleProducts = [
         size: "M",
         condition: "usado",
         donor: "João Santos",
-        image: "images/calca-baggy.webp",
+        image: "images/Calças/calca-baggy.webp",
         status: "analyzing",
         whatsapp: "",
         chatEnabled: true
@@ -40,7 +41,7 @@ const sampleProducts = [
         size: "M",
         condition: "novo",
         donor: "Ana Costa",
-        image: "images/shorts-eric.webp",
+        image: "images/shorts/shorts-eric.webp",
         status: "donated",
         whatsapp: "11888888888",
         chatEnabled: false
@@ -53,7 +54,7 @@ const sampleProducts = [
         size: "M",
         condition: "seminovo",
         donor: "Carlos Lima",
-        image: "images/shorts-nike.webp",
+        image: "images/shorts/shorts-nike.webp",
         status: "available",
         whatsapp: "11777777777",
         chatEnabled: true
@@ -66,7 +67,7 @@ const sampleProducts = [
         size: "M",
         condition: "usado",
         donor: "Fernanda Oliveira",
-        image: "images/camiseta-stone.webp",
+        image: "images/camisetas/camiseta-stone.webp",
         status: "available",
         whatsapp: "",
         chatEnabled: true
@@ -79,7 +80,7 @@ const sampleProducts = [
         size: "M",
         condition: "novo",
         donor: "Patricia Mendes",
-        image: "images/calca-corteiz.webp",
+        image: "images/Calças/calca-corteiz.webp",
         status: "analyzing",
         whatsapp: "11666666666",
         chatEnabled: true
@@ -216,10 +217,24 @@ function toggleIncomeField() {
 
 // Navigation
 function showPage(pageId) {
+    const currentActive = document.querySelector('.page.active');
+    if (currentActive && currentActive.id !== pageId) {
+        previousPage = currentActive.id;
+    }
+    
     document.querySelectorAll('.page').forEach(page => {
         page.classList.remove('active');
     });
     document.getElementById(pageId).classList.add('active');
+}
+
+function goBack() {
+    showPage(previousPage);
+    if (previousPage === 'donorPage') {
+        renderDonorProducts();
+    } else if (previousPage === 'homePage') {
+        renderProducts();
+    }
 }
 
 function showHome() {
@@ -313,7 +328,7 @@ function renderProducts() {
     const filteredProducts = getFilteredProducts();
     
     grid.innerHTML = filteredProducts.map(product => `
-        <div class="product-card ${product.status === 'donated' ? 'donated' : ''}">
+        <div class="product-card ${product.status === 'donated' ? 'donated' : ''}" onclick="showProductDetails(${product.id})">
             <img src="${product.image}" alt="${product.name}" class="product-image ${product.status === 'donated' ? 'donated' : ''}">
             <div class="product-info">
                 <h3 class="product-name">${product.name}</h3>
@@ -341,7 +356,7 @@ function renderRecentProducts() {
     const recentProducts = products.slice(0, 5);
     
     recentGrid.innerHTML = recentProducts.map(product => `
-        <div class="recent-card" onclick="handleProductClick(${product.id})">
+        <div class="recent-card" onclick="showProductDetails(${product.id})">
             <img src="${product.image}" alt="${product.name}" class="product-image ${product.status === 'donated' ? 'donated' : ''}">
             <div class="product-info">
                 <h3 class="product-name">${product.name}</h3>
@@ -355,12 +370,135 @@ function renderRecentProducts() {
     `).join('');
 }
 
+function showProductDetails(productId) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    
+    // Definir imagens específicas para cada produto
+    let images;
+    if (product.id === 1) {
+        images = [product.image, "images/Camisetas/Camisas Hellstar2.webp", product.image];
+    } else {
+        images = [product.image, product.image, product.image];
+    }
+    
+    const detailsContainer = document.getElementById('productDetails');
+    detailsContainer.innerHTML = `
+        <div class="product-detail-container">
+            <div class="carousel-container">
+                <div class="carousel">
+                    ${images.map((img, index) => `
+                        <img src="${img}" alt="${product.name}" class="carousel-image ${index === 0 ? 'active' : ''}">
+                    `).join('')}
+                    <button class="carousel-nav carousel-prev" onclick="changeCarouselImage(-1)">‹</button>
+                    <button class="carousel-nav carousel-next" onclick="changeCarouselImage(1)">›</button>
+                </div>
+            </div>
+            <div class="product-detail-info">
+                <h1 class="product-detail-title">${product.name}</h1>
+                <p class="product-detail-description">${product.description}</p>
+                <div class="product-detail-specs">
+                    <p><strong>Tamanho:</strong> ${product.size}</p>
+                    <p><strong>Tipo:</strong> ${product.type.charAt(0).toUpperCase() + product.type.slice(1)}</p>
+                    <p><strong>Condição:</strong> ${product.condition}</p>
+                    <div class="product-donor">
+                        <img src="images/avatar2.webp?v=1" alt="Avatar" class="donor-avatar">
+                        <span><strong>Doador:</strong> ${product.donor}</span>
+                    </div>
+                </div>
+                <div class="product-detail-actions">
+                    ${product.chatEnabled ? `<button class="btn btn-primary" onclick="startChat(${product.id})">Chat</button>` : ''}
+                    ${product.whatsapp ? `<a href="https://wa.me/55${product.whatsapp}" class="btn btn-secondary">WhatsApp</a>` : ''}
+                    ${currentUser && currentUser.type === 'donatario' ? `<button class="btn btn-outline" onclick="handleProductClick(${product.id})">Tenho Interesse</button>` : ''}
+                </div>
+            </div>
+        </div>
+        ${product.id === 1 ? `
+        <div style="margin-top: 4rem;">
+            <h2 class="section-title">Veja também</h2>
+            <div class="recent-grid">
+                <div class="recent-card" onclick="showProductDetails(2)">
+                    <img src="images/Calças/calca-baggy.webp" alt="Calça Baggy" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">Calça Baggy Lavagem Preta</h3>
+                        <p class="product-details">M • usado</p>
+                        <div class="product-donor">
+                            <img src="images/avatar2.webp?v=1" alt="Avatar" class="donor-avatar">
+                            <span>João Santos</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="recent-card" onclick="showProductDetails(4)">
+                    <img src="images/shorts/shorts-nike.webp" alt="Shorts Nike" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">Shorts Nike</h3>
+                        <p class="product-details">M • seminovo</p>
+                        <div class="product-donor">
+                            <img src="images/avatar2.webp?v=1" alt="Avatar" class="donor-avatar">
+                            <span>Carlos Lima</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="recent-card" onclick="showProductDetails(3)">
+                    <img src="images/shorts/shorts-eric.webp" alt="Shorts Eric" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">Shorts Eric Emanuel</h3>
+                        <p class="product-details">M • novo</p>
+                        <div class="product-donor">
+                            <img src="images/avatar2.webp?v=1" alt="Avatar" class="donor-avatar">
+                            <span>Ana Costa</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="recent-card" onclick="showProductDetails(5)">
+                    <img src="images/camisetas/camiseta-stone.webp" alt="Camiseta Stone" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">Camiseta Stone Island</h3>
+                        <p class="product-details">M • usado</p>
+                        <div class="product-donor">
+                            <img src="images/avatar2.webp?v=1" alt="Avatar" class="donor-avatar">
+                            <span>Fernanda Oliveira</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="recent-card" onclick="showProductDetails(6)">
+                    <img src="images/Calças/calca-corteiz.webp" alt="Calça Corteiz" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">Calça Corteiz Devil Island</h3>
+                        <p class="product-details">M • novo</p>
+                        <div class="product-donor">
+                            <img src="images/avatar2.webp?v=1" alt="Avatar" class="donor-avatar">
+                            <span>Patricia Mendes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        ` : ''}
+    `;
+    
+    showPage('productDetailsPage');
+}
+
+let currentCarouselIndex = 0;
+
+function changeCarouselImage(direction) {
+    const images = document.querySelectorAll('.carousel-image');
+    images[currentCarouselIndex].classList.remove('active');
+    
+    currentCarouselIndex += direction;
+    if (currentCarouselIndex >= images.length) currentCarouselIndex = 0;
+    if (currentCarouselIndex < 0) currentCarouselIndex = images.length - 1;
+    
+    images[currentCarouselIndex].classList.add('active');
+}
+
 function renderDonorProducts() {
     const grid = document.getElementById('donorProducts');
     const userProducts = products.filter(p => p.donorId === currentUser.id);
     
     grid.innerHTML = userProducts.map(product => `
-        <div class="product-card">
+        <div class="product-card" onclick="showProductDetails(${product.id})">
             <img src="${product.image}" alt="${product.name}" class="product-image">
             <div class="product-info">
                 <h3 class="product-name">${product.name}</h3>
